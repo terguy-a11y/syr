@@ -1,0 +1,302 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>누나IT</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* Layout: 질문과 대답이 오가는 대화 화면을 히어로로, 아래는 주제 / 대표 영상 / 도서 / 연락처 순의 한 컬럼 구성 */
+:root {
+  --bg: #F2F4FB;
+  --surface: #FFFFFF;
+  --ink: #12162B;
+  --muted: #5A6180;
+  --line: #D9DEEE;
+  --accent: #2F46F0;
+  --on-accent: #FFFFFF;
+  --mark: #FFE45C;
+  --on-mark: #12162B;
+  --font-display: "Black Han Sans", "Noto Sans KR", sans-serif;
+  --font-body: "Noto Sans KR", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1122; --surface: #181C34; --ink: #EEF0FA; --muted: #A2A9C8;
+    --line: #2A3052; --accent: #8E9CFF; --on-accent: #0E1122;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1122; --surface: #181C34; --ink: #EEF0FA; --muted: #A2A9C8;
+  --line: #2A3052; --accent: #8E9CFF; --on-accent: #0E1122;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.7;
+  padding-block: 8px 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  word-break: keep-all;
+}
+.wrap { max-width: 1040px; margin: 0 auto; }
+a { color: inherit; }
+a:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { text-wrap: balance; }
+
+/* header */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 18px; flex-wrap: wrap; }
+.logo { font-family: var(--font-display); font-size: 26px; text-decoration: none; letter-spacing: -0.01em; }
+.logo span { background: var(--mark); color: var(--on-mark); padding: 0 6px; border-radius: 4px; margin-left: 2px; }
+.nav { display: flex; gap: 20px; flex-wrap: wrap; font-size: 14px; font-weight: 500; }
+.nav a { text-decoration: none; color: var(--muted); }
+.nav a:hover { color: var(--ink); }
+
+/* hero */
+.hero { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); gap: 40px 56px; align-items: center; padding-block: 40px 72px; }
+.eyebrow { font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 18px; }
+.hero h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(34px, 6.2vw, 64px); line-height: 1.22; letter-spacing: -0.015em; }
+.hl { background: linear-gradient(transparent 58%, var(--mark) 58%); color: inherit; padding: 0 2px; }
+:root[data-theme="dark"] .hl { color: inherit; }
+.hero .lead { margin-top: 22px; color: var(--muted); max-width: 34em; font-size: 17px; }
+.cta-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 30px; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 13px 22px; border-radius: 999px; font-weight: 700; font-size: 15px; text-decoration: none; border: 2px solid var(--ink); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.ghost:hover { background: var(--ink); color: var(--bg); }
+
+.side { display: flex; flex-direction: column; min-width: 0; }
+.portrait { margin: 0; width: 100%; max-width: 400px; align-self: flex-end; border-radius: 24px; overflow: hidden; border: 1px solid var(--line); background: var(--surface); }
+.portrait img { display: block; width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: cover; }
+.chat { display: flex; flex-direction: column; gap: 12px; min-width: 0; margin-top: -44px; position: relative; }
+.bubble { max-width: 88%; padding: 14px 18px; border-radius: 20px; font-size: 15px; line-height: 1.55; }
+.bubble small { display: block; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; margin-bottom: 4px; opacity: 0.75; }
+.q { align-self: flex-start; background: var(--surface); border: 1px solid var(--line); border-bottom-left-radius: 6px; }
+.a { align-self: flex-end; background: var(--accent); color: var(--on-accent); border-bottom-right-radius: 6px; }
+.chat-note { font-family: var(--font-mono); font-size: 12px; color: var(--muted); text-align: center; margin-top: 4px; }
+
+/* sections */
+section { padding-block: 64px; border-top: 1px solid var(--line); }
+.sec-head { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 16px 56px; margin-bottom: 36px; align-items: end; }
+.sec-head h2 { font-family: var(--font-display); font-weight: 400; font-size: clamp(28px, 4.4vw, 44px); line-height: 1.2; }
+.sec-head p { color: var(--muted); }
+
+/* topics */
+.topics { display: flex; flex-direction: column; }
+.topic { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 8px 32px; padding-block: 28px; border-top: 1px solid var(--line); }
+.topic:last-child { border-bottom: 1px solid var(--line); }
+.tag { font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.08em; color: var(--accent); padding-top: 8px; }
+.topic h3 { font-size: 24px; font-weight: 700; line-height: 1.4; }
+.topic p { color: var(--muted); margin-top: 6px; max-width: 40em; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.chip { font-size: 13px; font-weight: 500; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); }
+
+/* featured video */
+.video { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.7fr); gap: 28px 40px; align-items: center; }
+.player { position: relative; aspect-ratio: 16 / 9; max-width: 100%; border-radius: 18px; background: var(--ink); color: var(--bg); display: grid; place-items: center; text-decoration: none; overflow: hidden; }
+.player img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.play { position: relative; width: 72px; height: 72px; box-shadow: 0 6px 20px rgba(0,0,0,0.35); border-radius: 50%; background: var(--mark); display: grid; place-items: center; transition: transform .2s; }
+.play::after { content: ""; margin-left: 6px; border-left: 24px solid var(--on-mark); border-top: 15px solid transparent; border-bottom: 15px solid transparent; }
+.player:hover .play { transform: scale(1.08); }
+.player-label { position: absolute; left: 18px; bottom: 14px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em; }
+.video-copy h3 { font-family: var(--font-display); font-weight: 400; font-size: 28px; line-height: 1.3; }
+.video-copy p { color: var(--muted); margin-top: 10px; }
+.video-copy .btn { margin-top: 20px; }
+
+/* books */
+.books { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
+.book { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 24px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 24px; }
+.cover { display: block; width: 100%; height: auto; aspect-ratio: 640 / 933; border-radius: 3px 8px 8px 3px; box-shadow: 6px 8px 0 var(--line); }
+.book h3 { font-size: 19px; font-weight: 700; line-height: 1.45; }
+.meta { font-family: var(--font-mono); font-size: 13px; color: var(--muted); margin-top: 10px; }
+.badge { display: inline-block; margin-top: 14px; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 6px; background: var(--mark); color: var(--on-mark); }
+
+/* contact */
+.contact { background: var(--ink); color: var(--bg); border-radius: 24px; padding: 44px clamp(22px, 5vw, 56px); display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px 40px; align-items: center; }
+.contact h2 { font-family: var(--font-display); font-weight: 400; font-size: clamp(26px, 4vw, 38px); line-height: 1.25; }
+.contact p { opacity: 0.75; margin-top: 8px; }
+.mail-box { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.mail { font-family: var(--font-mono); font-size: 17px; background: rgba(255,255,255,0.1); padding: 12px 16px; border-radius: 12px; user-select: all; overflow-wrap: anywhere; }
+.copy { font: inherit; font-weight: 700; font-size: 14px; background: var(--mark); color: var(--on-mark); border: 0; border-radius: 12px; padding: 12px 18px; cursor: pointer; }
+.mail-link { display: block; margin-top: 12px; font-size: 14px; opacity: 0.8; }
+
+footer { padding-block: 40px 56px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+footer a { text-decoration: none; border-bottom: 1px solid var(--line); }
+
+@media (max-width: 860px) {
+  .hero, .sec-head, .video, .contact { grid-template-columns: minmax(0, 1fr); }
+  .hero { padding-block: 24px 56px; }
+  .books { grid-template-columns: minmax(0, 1fr); }
+  .topic { grid-template-columns: minmax(0, 1fr); }
+  .tag { padding-top: 0; }
+}
+@media (max-width: 440px) {
+  .book { grid-template-columns: 104px minmax(0, 1fr); gap: 16px; padding: 18px; }
+  .portrait { max-width: 100%; }
+  .nav { gap: 14px; }
+}
+@media (prefers-reduced-motion: reduce) { .play { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <a class="logo" href="#top">누나<span>IT</span></a>
+    <nav class="nav" aria-label="바로가기">
+      <a href="#topics">다루는 주제</a>
+      <a href="#video">대표 영상</a>
+      <a href="#books">도서</a>
+      <a href="#contact">연락처</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <div class="hero">
+      <div>
+        <p class="eyebrow">IT 유튜버 · AI 도서 저자</p>
+        <h1>누구나 아는 <span class="hl">나만 모르는</span> IT를 쉽게 알려드립니다</h1>
+        <p class="lead">챗GPT, 제미나이, 클로드부터 엑셀, 유튜브 운영까지. 어렵게 느껴지는 IT를 일할 때 바로 쓸 수 있는 말로 풀어 드립니다.</p>
+        <div class="cta-row">
+          <a class="btn primary" href="https://www.youtube.com/@%EB%88%84%EB%82%98IT" target="_blank" rel="noopener">유튜브 채널 보기</a>
+          <a class="btn ghost" href="#books">도서 보기</a>
+        </div>
+      </div>
+      <div class="side">
+        <figure class="portrait"><img src="img/profile.jpg" width="720" height="720" alt="누나IT 프로필 사진"></figure>
+        <div class="chat" aria-label="누나IT가 하는 일을 보여 주는 대화 예시">
+          <div class="q bubble"><small>구독자</small>다들 쓰는 것 같은데, 저만 모르는 거 아니죠?</div>
+          <div class="a bubble"><small>누나IT</small>아니에요. 모르는 게 당연해요. 같이 차근차근 해 봐요.</div>
+          <p class="chat-note">대화는 예시입니다</p>
+        </div>
+      </div>
+    </div>
+
+    <section id="topics">
+      <div class="sec-head">
+        <h2>다루는 주제</h2>
+        <p>AI를 쓰는 법에서 사무 도구, 채널 운영까지. 일과 생활에서 막히는 지점을 하나씩 풀어 드립니다.</p>
+      </div>
+      <div class="topics">
+        <article class="topic">
+          <div class="tag">AI</div>
+          <div>
+            <h3>AI 활용법</h3>
+            <p>챗GPT, 제미나이, 클로드 등 AI를 실생활과 업무에 쓰는 법을 알려드립니다.</p>
+            <div class="chips"><span class="chip">챗GPT</span><span class="chip">제미나이</span><span class="chip">클로드</span></div>
+          </div>
+        </article>
+        <article class="topic">
+          <div class="tag">OFFICE</div>
+          <div>
+            <h3>실무 IT 팁</h3>
+            <p>엑셀과 같은 오피스 프로그램을 잘 쓰는 법을 알려드립니다.</p>
+            <div class="chips"><span class="chip">엑셀</span><span class="chip">오피스 프로그램</span></div>
+          </div>
+        </article>
+        <article class="topic">
+          <div class="tag">YOUTUBE</div>
+          <div>
+            <h3>유튜브 운영법</h3>
+            <p>누구의 도움 없이 혼자 유튜브를 운영할 수 있도록 교육 과정을 운영합니다.</p>
+            <div class="chips"><span class="chip">교육 과정</span><span class="chip">혼자 운영하기</span></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="video">
+      <div class="sec-head">
+        <h2>대표 영상</h2>
+        <p>처음 오셨다면 이 영상부터 보세요.</p>
+      </div>
+      <div class="video">
+        <a class="player" href="https://youtu.be/aq4LfmKDHDI?si=onrd_jTFDZftPIcc" target="_blank" rel="noopener" aria-label="유튜브에서 대표 영상 보기">
+          <img src="img/video-thumb.jpg" width="491" height="272" alt="영상 섬네일: 특히 50대 60대가 제미나이를 배워야 하는 이유">
+          <span class="play" aria-hidden="true"></span>
+        </a>
+        <div class="video-copy">
+          <h3>특히 50대 60대가 제미나이를 배워야 하는 이유</h3>
+          <p>유튜브에서 바로 재생됩니다. 재생 시간은 9분 29초입니다.</p>
+          <a class="btn primary" href="https://youtu.be/aq4LfmKDHDI?si=onrd_jTFDZftPIcc" target="_blank" rel="noopener">영상 보러 가기</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="books">
+      <div class="sec-head">
+        <h2>AI 베스트셀러 도서</h2>
+        <p>챗GPT와 제미나이를 처음 쓰는 분도 따라올 수 있게 썼습니다. 출판사는 한빛미디어입니다.</p>
+      </div>
+      <div class="books">
+        <article class="book">
+          <img class="cover" src="img/book-chatgpt.jpg" width="640" height="933" alt="누구나 아는 나만 모르는 챗GPT 책 표지">
+          <div>
+            <h3>누구나 아는 나만 모르는 챗GPT</h3>
+            <p class="meta">한빛미디어 · 2025</p>
+            <span class="badge">AI 베스트셀러</span>
+          </div>
+        </article>
+        <article class="book">
+          <img class="cover" src="img/book-gemini.jpg" width="640" height="933" alt="누구나 아는 나만 모르는 제미나이 책 표지">
+          <div>
+            <h3>누구나 아는 나만 모르는 제미나이</h3>
+            <p class="meta">한빛미디어 · 2026</p>
+            <span class="badge">AI 베스트셀러</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="contact" style="border-top:0; padding-block: 24px 0;">
+      <div class="contact">
+        <div>
+          <h2>강의, 협업, 인터뷰 문의</h2>
+          <p>메일로 편하게 연락 주세요.</p>
+        </div>
+        <div>
+          <div class="mail-box">
+            <span class="mail" id="mail">aaa1234@gmail.com</span>
+            <button class="copy" id="copy" type="button">복사</button>
+          </div>
+          <a class="mail-link" href="mailto:aaa1234@gmail.com">메일 앱으로 열기</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>© 2026 누나IT</span>
+    <a href="https://www.youtube.com/@%EB%88%84%EB%82%98IT" target="_blank" rel="noopener">youtube.com/@누나IT</a>
+  </footer>
+</div>
+
+<script>
+(function () {
+  var btn = document.getElementById('copy');
+  var mail = document.getElementById('mail');
+  btn.addEventListener('click', function () {
+    var text = mail.textContent.trim();
+    function selectText() {
+      try {
+        var r = document.createRange(); r.selectNodeContents(mail);
+        var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      } catch (e) {}
+      btn.textContent = '선택됨';
+    }
+    try {
+      navigator.clipboard.writeText(text).then(function () {
+        btn.textContent = '복사됨';
+        setTimeout(function () { btn.textContent = '복사'; }, 1800);
+      }, selectText);
+    } catch (e) { selectText(); }
+  });
+})();
+</script>
+
+</body></html>

@@ -1,0 +1,631 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0e23">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="운동 체크">
+<title>운동 체크</title>
+<style>
+:root{
+  --bg:#0b0e23; --card:#151a38; --card2:#1d2347; --text:#f4f6ff; --mute:#8b93c0;
+  --line:rgba(255,255,255,.07);
+  --swim1:#38bdf8; --swim2:#2563eb;
+  --run1:#ffb703; --run2:#ff5a36;
+  --push1:#d9f99d; --push2:#84cc16;
+  --hang1:#e9b8ff; --hang2:#8b5cf6;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{
+  margin:0; color:var(--text); min-height:100vh;
+  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR","Malgun Gothic",system-ui,sans-serif;
+  background:
+    radial-gradient(600px 300px at 10% -5%, rgba(255,90,54,.28), transparent 60%),
+    radial-gradient(500px 300px at 100% 0%, rgba(56,189,248,.22), transparent 60%),
+    var(--bg);
+  background-attachment:fixed;
+  -webkit-text-size-adjust:100%;
+  touch-action:manipulation;
+}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
+.app{max-width:480px;margin:0 auto;padding:max(16px,env(safe-area-inset-top)) 16px calc(40px + env(safe-area-inset-bottom))}
+
+/* header */
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.brand h1{margin:0;font-size:26px;font-weight:900;letter-spacing:-.5px;
+  background:linear-gradient(90deg,#ffb703,#ff5a36 60%,#ff2d87);-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand p{margin:2px 0 0;font-size:13px;color:var(--mute)}
+.streak{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);
+  padding:8px 12px;border-radius:999px;font-weight:800;font-size:14px}
+.streak b{color:#ffb703;font-size:16px}
+
+.monthbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.nav{width:44px;height:44px;border-radius:14px;background:var(--card);border:1px solid var(--line);font-size:22px;font-weight:800;display:grid;place-items:center}
+.nav:disabled{opacity:.25}
+.nav:active:not(:disabled){transform:scale(.94)}
+.monthlabel{font-size:20px;font-weight:900;letter-spacing:-.3px}
+.todaybtn{height:44px;padding:0 14px;border-radius:14px;background:var(--card);border:1px solid var(--line);font-weight:800;font-size:14px;color:#ffb703}
+
+/* day strip */
+.strip{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 12px;margin:0 -16px 6px;padding-left:16px;padding-right:16px;
+  scroll-snap-type:x proximity;scrollbar-width:none}
+.strip::-webkit-scrollbar{display:none}
+.day{flex:0 0 52px;height:70px;border-radius:18px;background:var(--card);border:1px solid var(--line);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative;scroll-snap-align:center;transition:transform .12s}
+.day:active{transform:scale(.95)}
+.day small{font-size:11px;color:var(--mute);font-weight:700}
+.day strong{font-size:20px;font-weight:900}
+.day.sun small{color:#ff7a8a}.day.sat small{color:#7cc4ff}
+.day.today{border-color:#ffb703}
+.day.has::after{content:"";position:absolute;bottom:7px;width:5px;height:5px;border-radius:50%;background:#84cc16}
+.day.sel{background:linear-gradient(150deg,var(--run1),var(--run2));border-color:transparent;box-shadow:0 8px 20px rgba(255,90,54,.35)}
+.day.sel small{color:rgba(255,255,255,.9)}
+.day.sel.has::after{background:#fff}
+
+/* cards */
+.card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:18px;margin-bottom:14px}
+.sectitle{margin:22px 4px 10px;font-size:15px;font-weight:800;color:var(--mute);letter-spacing:.3px}
+
+.rechead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.rechead h2{margin:0;font-size:19px;font-weight:900;display:flex;align-items:center;gap:8px}
+.tag{font-size:11px;font-weight:800;background:#ffb703;color:#2b1800;padding:3px 8px;border-radius:999px}
+.count{font-weight:900;font-size:15px;color:var(--mute)}
+.count b{color:var(--text);font-size:20px}
+.progress{height:8px;background:var(--card2);border-radius:99px;overflow:hidden;margin-bottom:16px}
+.progress i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--run1),var(--run2),#ff2d87);transition:width .35s}
+
+.rates{padding:16px 14px}
+.ratehead{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;padding:0 4px}
+.ratehead h2{margin:0;font-size:17px;font-weight:900}
+.ratehead span{font-size:12px;color:var(--mute);font-weight:700}
+.ratesgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.rate{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+.ring{--p:0;position:relative;width:100%;max-width:76px;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;
+  background:conic-gradient(var(--g1),var(--g2) calc(var(--p) * 1%),var(--card2) 0)}
+.ring::before{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--card)}
+.ring b{position:relative;font-size:17px;font-weight:900;letter-spacing:-.5px}
+.ring b small{font-size:10px;margin-left:1px;color:var(--mute);font-weight:800}
+.rate .rn{font-size:12px;font-weight:800;white-space:nowrap}
+.rate .rd{font-size:11px;color:var(--mute);font-weight:700}
+.r-swim{--g1:var(--swim1);--g2:var(--swim2)}
+.r-run{--g1:var(--run1);--g2:var(--run2)}
+.r-push{--g1:var(--push1);--g2:var(--push2)}
+.r-hang{--g1:var(--hang1);--g2:var(--hang2)}
+
+.items{display:flex;flex-direction:column;gap:12px}
+.item{background:var(--card2);border-radius:22px;padding:12px 14px;border:2px solid transparent;transition:border-color .2s}
+.item.done{border-color:var(--g2)}
+#swimItem{--g1:var(--swim1);--g2:var(--swim2);--ck:#fff}
+#runBox{--g1:var(--run1);--g2:var(--run2);--ck:#fff}
+#pushBox{--g1:var(--push1);--g2:var(--push2);--ck:#14260a}
+#hangItem{--g1:var(--hang1);--g2:var(--hang2);--ck:#1d0b3d}
+.check{position:relative;display:flex;align-items:center;gap:12px;min-height:48px;cursor:pointer;-webkit-user-select:none;user-select:none}
+.check input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.box{flex:0 0 34px;width:34px;height:34px;border-radius:11px;border:2px solid var(--mute);display:grid;place-items:center;transition:background .15s,border-color .15s,transform .12s}
+.box::after{content:"";width:9px;height:17px;border:solid var(--ck,#fff);border-width:0 4px 4px 0;transform:rotate(45deg) scale(0);margin-top:-3px;transition:transform .15s}
+.check:active .box{transform:scale(.92)}
+.check input:checked + .box{background:linear-gradient(150deg,var(--g1),var(--g2));border-color:transparent}
+.check input:checked + .box::after{transform:rotate(45deg) scale(1)}
+.check input:focus-visible + .box{outline:3px solid rgba(255,255,255,.45);outline-offset:2px}
+.check .nm{font-size:18px;font-weight:900}
+.check .st{margin-left:auto;font-size:13px;font-weight:800;color:var(--mute)}
+.item.done .st{color:var(--text)}
+.item .stbody{margin-top:12px}
+.round{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.stbody{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.round{width:56px;height:56px;border-radius:50%;font-size:28px;font-weight:800;display:grid;place-items:center;background:var(--card);border:1px solid var(--line)}
+.round:active{transform:scale(.92)}
+.numwrap{flex:1;text-align:center;min-width:0}
+.numwrap input{width:100%;text-align:center;background:transparent;border:0;outline:0;color:var(--text);font:inherit;font-size:44px;font-weight:900;padding:0;-moz-appearance:textfield}
+.numwrap input::-webkit-outer-spin-button,.numwrap input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.numwrap .unit{font-size:13px;color:var(--mute);font-weight:700;margin-top:-4px}
+#runBox .numwrap input{background:linear-gradient(180deg,var(--run1),var(--run2));-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+#pushBox .numwrap input{background:linear-gradient(180deg,var(--push1),var(--push2));-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.chips{display:flex;gap:8px;margin-top:12px}
+.chip{flex:1;height:42px;border-radius:14px;background:var(--card);border:1px solid var(--line);font-weight:800;font-size:14px}
+.chip:active{transform:scale(.95)}
+.chip.reset{color:var(--mute);flex:.8}
+
+/* summary */
+.sumgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{border-radius:20px;padding:14px 16px;background:var(--card);border:1px solid var(--line)}
+.tile .l{font-size:12px;color:var(--mute);font-weight:800}
+.tile .v{font-size:28px;font-weight:900;margin-top:4px;letter-spacing:-.5px}
+.tile .v small{font-size:13px;color:var(--mute);margin-left:3px;font-weight:700}
+.tile.run .v{color:var(--run1)}.tile.push .v{color:var(--push1)}.tile.swim .v{color:var(--swim1)}.tile.hang .v{color:var(--hang1)}
+
+/* bar charts */
+.chead{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px}
+.chead h3{margin:0;font-size:17px;font-weight:900}
+.chead .sub{font-size:12px;color:var(--mute);margin-top:2px;font-weight:700}
+.readout{font-size:13px;font-weight:900;padding:6px 10px;border-radius:999px;background:var(--card2);white-space:nowrap}
+.chart{display:flex;gap:2px;align-items:stretch;padding-top:24px;height:190px}
+.col{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px}
+.track{flex:1;width:100%;display:flex;align-items:flex-end;justify-content:center;border-radius:6px}
+.bar{width:78%;min-width:4px;border-radius:5px 5px 2px 2px;background:linear-gradient(180deg,var(--c1),var(--c2));position:relative;transition:height .35s cubic-bezier(.2,.8,.2,1);opacity:.82}
+.bar.zero{height:3px;background:var(--card2);opacity:1}
+.col.sel .bar{opacity:1;box-shadow:0 0 14px var(--c2)}
+.col.sel .bar.zero{background:var(--mute)}
+.val{position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);font-size:12px;font-weight:900;white-space:nowrap;color:var(--text);visibility:hidden}
+.col.sel .val{visibility:visible}
+.lbl{font-size:9px;font-weight:700;color:var(--mute);height:12px;line-height:12px}
+.lbl.hide{visibility:hidden}
+.col.sel .lbl{color:var(--text);font-weight:900;visibility:visible}
+.col.future{opacity:.35}
+.col.todaycol .lbl{color:#ffb703}
+
+/* calendars */
+.calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.calhead h3{margin:0;font-size:17px;font-weight:900}
+.big{font-size:34px;font-weight:900;letter-spacing:-1px;line-height:1}
+.big small{font-size:14px;color:var(--mute);margin-left:3px;font-weight:700}
+.mini{height:7px;background:var(--card2);border-radius:99px;overflow:hidden;margin-bottom:6px}
+.mini i{display:block;height:100%;border-radius:99px;transition:width .35s}
+.note{font-size:12px;color:var(--mute);font-weight:700;margin-bottom:12px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.cal .dw{text-align:center;font-size:11px;font-weight:800;color:var(--mute);padding-bottom:2px}
+.cal .dw:first-child{color:#ff7a8a}.cal .dw:last-child{color:#7cc4ff}
+.dot{aspect-ratio:1;border-radius:50%;background:var(--card2);font-size:13px;font-weight:800;color:var(--mute);display:grid;place-items:center;border:2px solid transparent;transition:transform .12s}
+.dot:active:not(:disabled){transform:scale(.88)}
+.dot.today{border-color:#ffb703}
+.dot.future{opacity:.3}
+.dot.on{color:#fff;border-color:transparent}
+.dot.on.today{border-color:#fff}
+.cal.swim .dot.on{background:linear-gradient(150deg,var(--swim1),var(--swim2))}
+.cal.hang .dot.on{background:linear-gradient(150deg,var(--hang1),var(--hang2));color:#1d0b3d}
+.dot.blank{background:none;pointer-events:none}
+
+.foot{text-align:center;color:var(--mute);font-size:12px;margin-top:22px;line-height:1.6}
+
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,30px);opacity:0;pointer-events:none;
+  background:#fff;color:#111;padding:12px 18px;border-radius:999px;font-weight:800;font-size:14px;transition:all .25s;z-index:9;white-space:nowrap}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="brand">
+      <h1>운동 체크</h1>
+      <p>매일 한 칸씩, 꾸준히 💪</p>
+    </div>
+    <div class="streak" id="streak">🔥 <b id="streakN">0</b>일 연속</div>
+  </div>
+  <section class="card rates">
+    <div class="ratehead"><h2 id="rateTitle">달성률</h2><span id="rateSub"></span></div>
+    <div class="ratesgrid" id="ratesGrid"></div>
+  </section>
+
+  <div class="monthbar">
+    <button class="nav" id="prev" aria-label="이전 달">‹</button>
+    <div class="monthlabel" id="monthLabel"></div>
+    <button class="nav" id="next" aria-label="다음 달">›</button>
+    <button class="todaybtn" id="todayBtn">오늘</button>
+  </div>
+
+  <div class="strip" id="strip"></div>
+
+  <!-- 기록 -->
+  <section class="card" id="record">
+    <div class="rechead">
+      <h2><span id="dateTitle"></span><span class="tag" id="todayTag" hidden>TODAY</span></h2>
+      <div class="count"><b id="doneN">0</b>% 달성</div>
+    </div>
+    <div class="progress"><i id="progBar"></i></div>
+
+    <div class="items">
+      <div class="item" id="swimItem">
+        <label class="check">
+          <input type="checkbox" id="swimCb">
+          <span class="box"></span>
+          <span class="nm">🏊 수영</span>
+          <span class="st" id="swimSt">안 했어요</span>
+        </label>
+      </div>
+
+      <div class="item" id="runBox">
+        <label class="check">
+          <input type="checkbox" id="runCb">
+          <span class="box"></span>
+          <span class="nm">🏃 달리기</span>
+          <span class="st" id="runSt">기록 없음</span>
+        </label>
+        <div class="stbody">
+          <button class="round" data-f="run" data-d="-0.1" aria-label="100m 감소">−</button>
+          <div class="numwrap"><input id="runInput" type="number" inputmode="decimal" step="0.1" min="0" placeholder="0"><div class="unit">km · 100m 단위</div></div>
+          <button class="round" data-f="run" data-d="0.1" aria-label="100m 증가">+</button>
+        </div>
+        <div class="chips">
+          <button class="chip" data-f="run" data-add="0.5">+0.5</button>
+          <button class="chip" data-f="run" data-add="1">+1</button>
+          <button class="chip" data-f="run" data-add="5">+5</button>
+          <button class="chip reset" data-f="run" data-reset="1">초기화</button>
+        </div>
+      </div>
+
+      <div class="item" id="pushBox">
+        <label class="check">
+          <input type="checkbox" id="pushCb">
+          <span class="box"></span>
+          <span class="nm">💥 푸시업</span>
+          <span class="st" id="pushSt">기록 없음</span>
+        </label>
+        <div class="stbody">
+          <button class="round" data-f="push" data-d="-1" aria-label="1개 감소">−</button>
+          <div class="numwrap"><input id="pushInput" type="number" inputmode="numeric" step="1" min="0" placeholder="0"><div class="unit">개</div></div>
+          <button class="round" data-f="push" data-d="1" aria-label="1개 증가">+</button>
+        </div>
+        <div class="chips">
+          <button class="chip" data-f="push" data-add="5">+5</button>
+          <button class="chip" data-f="push" data-add="10">+10</button>
+          <button class="chip" data-f="push" data-add="20">+20</button>
+          <button class="chip reset" data-f="push" data-reset="1">초기화</button>
+        </div>
+      </div>
+
+      <div class="item" id="hangItem">
+        <label class="check">
+          <input type="checkbox" id="hangCb">
+          <span class="box"></span>
+          <span class="nm">🧗 매달리기</span>
+          <span class="st" id="hangSt">안 했어요</span>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <div class="sectitle" id="sumTitle">이번 달 요약</div>
+  <div class="sumgrid" id="summary"></div>
+
+  <div class="sectitle">일별 그래프</div>
+
+  <section class="card" style="--c1:var(--run1);--c2:var(--run2)">
+    <div class="chead">
+      <div><h3>🏃 달리기 (km)</h3><div class="sub" id="runSub"></div></div>
+      <div class="readout" id="runRead"></div>
+    </div>
+    <div class="chart" id="runChart"></div>
+  </section>
+
+  <section class="card" style="--c1:var(--push1);--c2:var(--push2)">
+    <div class="chead">
+      <div><h3>💥 푸시업 (개)</h3><div class="sub" id="pushSub"></div></div>
+      <div class="readout" id="pushRead"></div>
+    </div>
+    <div class="chart" id="pushChart"></div>
+  </section>
+
+  <div class="sectitle">이달에 한 날</div>
+
+  <section class="card">
+    <div class="calhead">
+      <h3>🏊 수영</h3>
+      <div class="big" style="color:var(--swim1)"><span id="swimN">0</span><small>일</small></div>
+    </div>
+    <div class="mini"><i id="swimBar" style="background:linear-gradient(90deg,var(--swim1),var(--swim2))"></i></div>
+    <div class="note" id="swimNote"></div>
+    <div class="cal swim" id="swimCal"></div>
+  </section>
+
+  <section class="card">
+    <div class="calhead">
+      <h3>🧗 매달리기</h3>
+      <div class="big" style="color:var(--hang1)"><span id="hangN">0</span><small>일</small></div>
+    </div>
+    <div class="mini"><i id="hangBar" style="background:linear-gradient(90deg,var(--hang1),var(--hang2))"></i></div>
+    <div class="note" id="hangNote"></div>
+    <div class="cal hang" id="hangCal"></div>
+  </section>
+
+  <div class="foot">기록은 이 기기의 브라우저에 자동 저장돼요.<br>달력의 동그라미를 탭하면 그 날 기록을 바로 바꿀 수 있어요.</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  const KEY = 'workout-checklist-v1';
+  const DOW = ['일','월','화','수','목','금','토'];
+  const $ = s => document.querySelector(s);
+  const pad = n => String(n).padStart(2, '0');
+  const mk = (y, m, d) => `${y}-${pad(m + 1)}-${pad(d)}`;
+
+  const now = new Date();
+  const NY = now.getFullYear(), NM = now.getMonth(), ND = now.getDate();
+  const todayK = mk(NY, NM, ND);
+
+  let store = {};
+  try { store = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { store = {}; }
+  if (typeof store !== 'object' || Array.isArray(store)) store = {};
+
+  let y = NY, m = NM, sel = todayK;
+
+  const empty = { swim: false, run: 0, push: 0, hang: false };
+  const get = k => Object.assign({}, empty, store[k]);
+  const doneCount = r => (r.swim ? 1 : 0) + (r.hang ? 1 : 0) + (r.run > 0 ? 1 : 0) + (r.push > 0 ? 1 : 0);
+  const dim = () => new Date(y, m + 1, 0).getDate();
+  const fmt1 = v => String(Math.round(v * 10) / 10);
+  const vib = () => { try { navigator.vibrate && navigator.vibrate(10); } catch (e) {} };
+
+  let toastT;
+  function toast(msg) {
+    const t = $('#toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1500);
+  }
+
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(store)); }
+    catch (e) { toast('⚠️ 저장 공간을 쓸 수 없어요'); }
+  }
+
+  function set(k, patch) {
+    const before = doneCount(get(k));
+    const r = Object.assign(get(k), patch);
+    if (!r.swim && !r.hang && !r.run && !r.push) delete store[k]; else store[k] = r;
+    save();
+    renderAll();
+    if (doneCount(r) === 4 && before < 4) toast('🎉 하루 운동 올클리어!');
+  }
+
+  /* ---------- render ---------- */
+  function renderHead() {
+    $('#monthLabel').textContent = `${y}년 ${m + 1}월`;
+    $('#next').disabled = (y > NY) || (y === NY && m >= NM);
+    const isCur = y === NY && m === NM;
+    $('#sumTitle').textContent = isCur ? '이번 달 요약' : `${m + 1}월 요약`;
+    // streak
+    let d = new Date(NY, NM, ND), n = 0;
+    if (!store[todayK]) d.setDate(d.getDate() - 1);
+    while (store[mk(d.getFullYear(), d.getMonth(), d.getDate())]) { n++; d.setDate(d.getDate() - 1); }
+    $('#streakN').textContent = n;
+  }
+
+  function renderStrip(scroll) {
+    const n = dim();
+    let h = '';
+    for (let d = 1; d <= n; d++) {
+      const k = mk(y, m, d), dw = new Date(y, m, d).getDay();
+      h += `<button class="day${k === sel ? ' sel' : ''}${k === todayK ? ' today' : ''}${store[k] ? ' has' : ''}${dw === 0 ? ' sun' : ''}${dw === 6 ? ' sat' : ''}" data-k="${k}"><small>${DOW[dw]}</small><strong>${d}</strong></button>`;
+    }
+    $('#strip').innerHTML = h;
+    if (scroll) {
+      const el = $('#strip .sel');
+      if (el) {
+        const s = $('#strip');
+        s.scrollLeft = el.offsetLeft - s.clientWidth / 2 + el.clientWidth / 2;
+      }
+    }
+  }
+
+  function setInput(el, val) { if (document.activeElement !== el) el.value = val; }
+
+  function renderRecord() {
+    const [yy, mm, dd] = sel.split('-').map(Number);
+    const dw = new Date(yy, mm - 1, dd).getDay();
+    $('#dateTitle').textContent = `${mm}월 ${dd}일 ${DOW[dw]}요일`;
+    $('#todayTag').hidden = sel !== todayK;
+    const r = get(sel), c = doneCount(r);
+    $('#doneN').textContent = Math.round(c / 4 * 100);
+    $('#progBar').style.width = (c / 4 * 100) + '%';
+    $('#swimCb').checked = r.swim;
+    $('#hangCb').checked = r.hang;
+    $('#runCb').checked = r.run > 0;
+    $('#pushCb').checked = r.push > 0;
+    $('#swimItem').classList.toggle('done', r.swim);
+    $('#hangItem').classList.toggle('done', r.hang);
+    $('#runBox').classList.toggle('done', r.run > 0);
+    $('#pushBox').classList.toggle('done', r.push > 0);
+    $('#swimSt').textContent = r.swim ? '완료 👍' : '안 했어요';
+    $('#hangSt').textContent = r.hang ? '완료 👍' : '안 했어요';
+    $('#runSt').textContent = r.run > 0 ? `${fmt1(r.run)} km` : '기록 없음';
+    $('#pushSt').textContent = r.push > 0 ? `${r.push}개` : '기록 없음';
+    setInput($('#runInput'), r.run ? fmt1(r.run) : '');
+    setInput($('#pushInput'), r.push ? String(r.push) : '');
+  }
+
+  function monthVals(f) {
+    const n = dim(), a = [];
+    for (let d = 1; d <= n; d++) a.push(get(mk(y, m, d))[f]);
+    return a;
+  }
+
+  function renderSummary() {
+    const run = monthVals('run'), push = monthVals('push'), sw = monthVals('swim'), hg = monthVals('hang');
+    const sum = a => a.reduce((s, v) => s + (v ? Number(v) : 0), 0);
+    $('#summary').innerHTML = `
+      <div class="tile run"><div class="l">🏃 달리기 합계</div><div class="v">${fmt1(sum(run))}<small>km</small></div></div>
+      <div class="tile push"><div class="l">💥 푸시업 합계</div><div class="v">${sum(push).toLocaleString()}<small>개</small></div></div>
+      <div class="tile swim"><div class="l">🏊 수영</div><div class="v">${sw.filter(Boolean).length}<small>일</small></div></div>
+      <div class="tile hang"><div class="l">🧗 매달리기</div><div class="v">${hg.filter(Boolean).length}<small>일</small></div></div>`;
+  }
+
+  function renderBar(id, subId, readId, f, unit, isFloat) {
+    const n = dim(), vals = monthVals(f);
+    const nonzero = vals.filter(v => v > 0);
+    const total = vals.reduce((s, v) => s + v, 0);
+    const mx = Math.max(isFloat ? 1 : 10, ...vals);
+    let h = '';
+    for (let d = 1; d <= n; d++) {
+      const k = mk(y, m, d), v = vals[d - 1];
+      const isFuture = y === NY && m === NM && d > ND;
+      const isSel = k === sel, isToday = k === todayK;
+      const show = d === 1 || d % 5 === 0 || isSel || isToday;
+      const label = isFloat ? fmt1(v) : v;
+      h += `<button class="col${isSel ? ' sel' : ''}${isFuture ? ' future' : ''}${isToday ? ' todaycol' : ''}" data-k="${k}" aria-label="${d}일 ${label}${unit}">
+        <div class="track"><div class="bar${v > 0 ? '' : ' zero'}"${v > 0 ? ` style="height:${Math.max(v / mx * 100, 4)}%"` : ''}><span class="val">${label}</span></div></div>
+        <span class="lbl${show ? '' : ' hide'}">${d}</span></button>`;
+    }
+    $(id).innerHTML = h;
+    const avg = nonzero.length ? total / nonzero.length : 0;
+    $(subId).textContent = nonzero.length
+      ? `${nonzero.length}일 기록 · 기록한 날 평균 ${isFloat ? fmt1(avg) : Math.round(avg)}${unit}`
+      : '아직 기록이 없어요';
+    const [, mm, dd] = sel.split('-').map(Number);
+    const sv = get(sel)[f];
+    $(readId).textContent = `${mm}/${dd} · ${isFloat ? fmt1(sv) : sv}${unit}`;
+  }
+
+  function renderCal(id, f, nId, barId, noteId) {
+    const n = dim(), first = new Date(y, m, 1).getDay();
+    const vals = monthVals(f);
+    const cnt = vals.filter(Boolean).length;
+    const isCur = y === NY && m === NM;
+    const elapsed = isCur ? ND : n;
+    let h = DOW.map(d => `<div class="dw">${d}</div>`).join('');
+    for (let i = 0; i < first; i++) h += '<div class="dot blank"></div>';
+    for (let d = 1; d <= n; d++) {
+      const k = mk(y, m, d);
+      const fut = isCur && d > ND;
+      h += `<button class="dot${vals[d - 1] ? ' on' : ''}${k === todayK ? ' today' : ''}${fut ? ' future' : ''}" data-k="${k}" data-f="${f}"${fut ? ' disabled' : ''}>${d}</button>`;
+    }
+    $(id).innerHTML = h;
+    $(nId).textContent = cnt;
+    $(barId).style.width = (cnt / elapsed * 100) + '%';
+    $(noteId).textContent = `${isCur ? '오늘까지 ' : ''}${elapsed}일 중 ${cnt}일 · ${Math.round(cnt / elapsed * 100)}%`;
+  }
+
+  function renderRates() {
+    const n = dim(), isCur = y === NY && m === NM, elapsed = isCur ? ND : n;
+    const defs = [
+      ['swim', '🏊', '수영', v => !!v],
+      ['run', '🏃', '달리기', v => v > 0],
+      ['push', '💥', '푸시업', v => v > 0],
+      ['hang', '🧗', '매달리기', v => !!v]
+    ];
+    $('#rateTitle').textContent = `${m + 1}월 항목별 달성률`;
+    $('#rateSub').textContent = isCur ? `오늘까지 ${elapsed}일 기준` : `${n}일 기준`;
+    $('#ratesGrid').innerHTML = defs.map(([f, ic, nm, ok]) => {
+      const cnt = monthVals(f).filter(ok).length;
+      const p = Math.round(cnt / elapsed * 100);
+      return `<div class="rate r-${f}"><div class="ring" style="--p:${p}"><b>${p}<small>%</small></b></div><div class="rn">${ic} ${nm}</div><div class="rd">${cnt}/${elapsed}일</div></div>`;
+    }).join('');
+  }
+
+  function renderAll(scroll) {
+    renderHead();
+    renderRates();
+    renderStrip(scroll);
+    renderRecord();
+    renderSummary();
+    renderBar('#runChart', '#runSub', '#runRead', 'run', 'km', true);
+    renderBar('#pushChart', '#pushSub', '#pushRead', 'push', '개', false);
+    renderCal('#swimCal', 'swim', '#swimN', '#swimBar', '#swimNote');
+    renderCal('#hangCal', 'hang', '#hangN', '#hangBar', '#hangNote');
+  }
+
+  /* ---------- events ---------- */
+  function selectDate(k, scroll) { sel = k; renderAll(scroll); }
+
+  function changeMonth(dm) {
+    m += dm;
+    if (m < 0) { m = 11; y--; } else if (m > 11) { m = 0; y++; }
+    sel = (y === NY && m === NM) ? todayK : mk(y, m, 1);
+    renderAll(true);
+  }
+  $('#prev').onclick = () => changeMonth(-1);
+  $('#next').onclick = () => changeMonth(1);
+  $('#todayBtn').onclick = () => { y = NY; m = NM; sel = todayK; renderAll(true); };
+
+  $('#strip').addEventListener('click', e => {
+    const b = e.target.closest('.day'); if (!b) return;
+    vib(); selectDate(b.dataset.k, true);
+  });
+
+  $('#swimCb').addEventListener('change', e => { vib(); set(sel, { swim: e.target.checked }); });
+  $('#hangCb').addEventListener('change', e => { vib(); set(sel, { hang: e.target.checked }); });
+
+  function clampVal(f, v) {
+    if (isNaN(v) || v < 0) v = 0;
+    if (f === 'run') return Math.min(999, Math.round(v * 10) / 10);
+    return Math.min(9999, Math.round(v));
+  }
+
+  function stepField(f, delta) {
+    set(sel, { [f]: clampVal(f, get(sel)[f] + delta) });
+  }
+
+  // 달리기/푸시업 체크박스: 기록이 있으면 지우고, 없으면 입력칸으로 이동
+  [['#runCb', 'run', '#runInput', '달리기'], ['#pushCb', 'push', '#pushInput', '푸시업']].forEach(([cid, f, iid, nm]) => {
+    $(cid).addEventListener('click', e => {
+      e.preventDefault();
+      vib();
+      if (get(sel)[f] > 0) {
+        setTimeout(() => { set(sel, { [f]: 0 }); toast(`${nm} 기록을 지웠어요`); }, 0);
+      } else {
+        $(iid).focus();
+      }
+    });
+  });
+
+  // ± 버튼: 누르고 있으면 계속 증가/감소
+  let holdT = null, holdI = null;
+  function stopHold() { clearTimeout(holdT); clearInterval(holdI); holdT = holdI = null; }
+  $('#record').addEventListener('pointerdown', e => {
+    const b = e.target.closest('.round'); if (!b) return;
+    const f = b.dataset.f, d = parseFloat(b.dataset.d);
+    const input = f === 'run' ? $('#runInput') : $('#pushInput');
+    if (document.activeElement === input) input.blur();
+    stopHold();
+    vib();
+    stepField(f, d);
+    holdT = setTimeout(() => { holdI = setInterval(() => stepField(f, d), 90); }, 450);
+  });
+  ['pointerup', 'pointercancel', 'contextmenu', 'blur'].forEach(ev => window.addEventListener(ev, stopHold));
+  $('#record').addEventListener('contextmenu', e => { if (e.target.closest('.round')) e.preventDefault(); });
+
+  document.querySelector('#record').addEventListener('click', e => {
+    const b = e.target.closest('button[data-f]'); if (!b) return;
+    const f = b.dataset.f, cur = get(sel)[f];
+    if (b.classList.contains('round')) {           // 터치/마우스는 pointerdown에서 처리, 키보드만 여기서
+      if (e.detail === 0) stepField(f, parseFloat(b.dataset.d));
+      return;
+    }
+    let v = cur;
+    if (b.dataset.reset) v = 0;
+    else if (b.dataset.add) v = cur + parseFloat(b.dataset.add);
+    else return;
+    vib();
+    const input = f === 'run' ? $('#runInput') : $('#pushInput');
+    if (document.activeElement === input) input.blur();
+    set(sel, { [f]: clampVal(f, v) });
+  });
+
+  [['#runInput', 'run'], ['#pushInput', 'push']].forEach(([id, f]) => {
+    const el = $(id);
+    el.addEventListener('focus', () => setTimeout(() => el.select(), 0));
+    el.addEventListener('input', () => set(sel, { [f]: clampVal(f, parseFloat(el.value)) }));
+    el.addEventListener('blur', () => { const v = get(sel)[f]; el.value = v ? (f === 'run' ? fmt1(v) : v) : ''; });
+    el.addEventListener('keydown', e => { if (e.key === 'Enter') el.blur(); });
+  });
+
+  ['#runChart', '#pushChart'].forEach(id => {
+    $(id).addEventListener('click', e => {
+      const b = e.target.closest('.col'); if (!b) return;
+      vib(); selectDate(b.dataset.k, true);
+      const [, mm, dd] = b.dataset.k.split('-').map(Number);
+      toast(`${mm}월 ${dd}일 선택 · 맨 위에서 수정할 수 있어요`);
+    });
+  });
+
+  ['#swimCal', '#hangCal'].forEach(id => {
+    $(id).addEventListener('click', e => {
+      const b = e.target.closest('.dot'); if (!b || b.disabled || !b.dataset.k) return;
+      const k = b.dataset.k, f = b.dataset.f;
+      vib();
+      sel = k;
+      set(k, { [f]: !get(k)[f] });
+    });
+  });
+
+  // 다른 탭에서 바뀐 경우 반영
+  window.addEventListener('storage', e => {
+    if (e.key === KEY) { try { store = JSON.parse(e.newValue) || {}; } catch (_) {} renderAll(); }
+  });
+
+  renderAll(true);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>구미 폴리텍 식단표</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: 요일 탭 → 선택한 날의 날씨 띠 → 아침·점심·저녁 식권 카드 */
+:root {
+  --bg: #eef1ee;
+  --surface: #ffffff;
+  --ink: #16211e;
+  --muted: #5a6a65;
+  --line: #d5dcd8;
+  --accent: #0e6b5b;
+  --accent-ink: #ffffff;
+  --rain: #b4491f;
+  --soft: #e3ebe7;
+  --font-display: "Black Han Sans", "Noto Sans KR", sans-serif;
+  --font-body: "Noto Sans KR", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111715; --surface: #1a2320; --ink: #e5ece9; --muted: #98aaa4;
+    --line: #2b3834; --accent: #5cc7b1; --accent-ink: #0b1613; --rain: #f08a5c; --soft: #22302c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111715; --surface: #1a2320; --ink: #e5ece9; --muted: #98aaa4;
+  --line: #2b3834; --accent: #5cc7b1; --accent-ink: #0b1613; --rain: #f08a5c; --soft: #22302c;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.6;
+  padding-block: 28px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+header h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(28px, 6vw, 40px); line-height: 1.15; margin: 0; text-wrap: balance; }
+header p { margin: 6px 0 0; color: var(--muted); }
+.tabs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.tab {
+  font: inherit; color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 6px; padding: 10px 6px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; min-width: 0;
+}
+.tab:hover { border-color: var(--accent); }
+.tab:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.tab .d { font-weight: 700; font-size: 16px; }
+.tab .dt { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.tab .tm { font-family: var(--font-mono); font-size: 12px; font-variant-numeric: tabular-nums; }
+.tab .now { font-size: 11px; font-weight: 700; color: var(--accent); min-height: 16px; }
+.tab[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.tab[aria-selected="true"] .dt, .tab[aria-selected="true"] .now { color: var(--accent-ink); }
+
+.weather {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  padding: 18px 20px; display: grid; grid-template-columns: auto 1fr; gap: 12px 24px; align-items: center;
+}
+.w-main { display: flex; align-items: center; gap: 14px; }
+.w-main svg { width: 56px; height: 56px; flex: none; color: var(--accent); }
+.w-main svg.rainy { color: var(--rain); }
+.w-temp { font-family: var(--font-display); font-size: 44px; line-height: 1; font-variant-numeric: tabular-nums; }
+.w-cond { font-weight: 700; }
+.w-sub { color: var(--muted); font-size: 13px; }
+.w-facts { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.w-facts li { background: var(--soft); border-radius: 4px; padding: 3px 10px; font-size: 13px; min-width: 0; }
+.w-facts b { font-family: var(--font-mono); font-weight: 600; font-variant-numeric: tabular-nums; }
+.w-note { grid-column: 1 / -1; margin: 0; padding-top: 12px; border-top: 1px solid var(--line); }
+.w-note.alert { color: var(--rain); font-weight: 500; }
+.w-empty { grid-column: 1 / -1; color: var(--muted); margin: 0; }
+
+.meals { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+.meal { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; display: flex; flex-direction: column; min-width: 0; }
+.meal-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 14px 18px 12px; border-bottom: 1px dashed var(--line); }
+.meal-head h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 22px; }
+.meal-head span { font-family: var(--font-mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.meal ul { list-style: none; margin: 0; padding: 12px 18px 16px; display: flex; flex-direction: column; gap: 6px; }
+.meal li { padding-bottom: 6px; border-bottom: 1px solid var(--soft); overflow-wrap: anywhere; }
+.meal li:last-child { border-bottom: 0; padding-bottom: 0; }
+.meal-note { margin: 0; padding: 0 18px 14px; font-size: 12px; color: var(--muted); }
+footer { color: var(--muted); font-size: 12.5px; display: flex; flex-direction: column; gap: 4px; }
+footer a { color: var(--accent); }
+@media (max-width: 560px) {
+  .weather { grid-template-columns: 1fr; }
+  .tab .tm { display: none; }
+}
+@media (prefers-reduced-motion: no-preference) { .tab { transition: background .15s, border-color .15s; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>구미캠퍼스 식단과 날씨</h1>
+    <p>한국폴리텍대학 구미캠퍼스 학생식당 · 10월 26일(월) ~ 30일(금)</p>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="요일 선택" id="tabs"></div>
+
+  <section class="weather" id="weather" aria-live="polite"></section>
+
+  <section class="meals" id="meals"></section>
+
+  <footer>
+    <span>식당 운영 및 식자재 수급 상황에 따라 메뉴가 바뀔 수 있습니다. 식단 페이지에 날짜 표시가 없어 현재 게시된 주간표를 이번 주(10/26~10/30)로 보았습니다.</span>
+    <span>구미 날씨는 29일 오전 기준 예보이며 이후 바뀔 수 있습니다. 월~수는 구미 값을 찾지 못해 대구·경북 기준 정보만 표시했습니다.</span>
+    <span>출처: <a href="https://www.kopo.ac.kr/gumi/content.do?menu=4941">한국폴리텍대학 구미캠퍼스 식단정보</a> · <a href="https://www.newsinside.kr/news/articleView.html?idxno=5035698">뉴스인사이드 구미 날씨</a> · <a href="https://weatheri.co.kr/leisure/leisure04.php?gid=LS04080200">웨더아이 구미 상세예보</a> · <a href="https://www.weather.go.kr/w/forecast/overall/short-term.do?stnId=143">기상청 대구·경북 단기예보</a> · <a href="https://kbmaeil.com/article/20261026500022">경북매일</a></span>
+  </footer>
+</div>
+
+<script>
+var TIMES = { b: "07:50 ~ 08:40", l: "11:50 ~ 13:10", d: "16:50 ~ 17:40" };
+var DAYS = [
+  { k: "월", date: "10/26", b: "컵밥, 음료",
+    l: "잡곡밥, 만둣국, 돈갈비찜, 꽃맛살샐러드, 오이양파무침, 포기김치",
+    d: "쌀밥, 얼큰쇠고기무국, 두부조림, 모듬강정, 호박당근볶음, 포기김치",
+    w: { none: true, note: "구미 날씨 기록을 찾지 못했습니다. 대구·경북은 대체로 흐리고 낮 최고 23도 안팎으로 예보됐고, 경북 남부 동해안에는 낮까지 비가 왔습니다." } },
+  { k: "화", date: "10/27", b: "모카크림빵, 흰우유",
+    l: "잡곡밥, 참치김치찌개, 어니언치킨까스, 건새우마늘쫑무침, 단배추생채, 깍두기",
+    d: "흰밥, 돼지국밥, 야채고로케/케찹, 풋고추된장무침, 부추양파무침, 석박지/요구르트",
+    w: { none: true, note: "구미 날씨 기록을 찾지 못했습니다. 대구·경북은 대체로 맑은 날씨가 예보됐고, 밤부터 기온이 떨어진다고 안내됐습니다." } },
+  { k: "수", date: "10/28", b: "컵밥, 음료",
+    l: "나가사끼짬뽕, 마파두부, 깐쇼새우, 토마토샐러드/드레싱, 포기김치, 흰밥",
+    d: "흰밥, 유부장국, 불닭볶음닭, 맛감자/케이준S, 케요네즈, 포기김치",
+    w: { none: true, note: "구미 날씨 기록을 찾지 못했습니다. 기상청 자료로는 이날 경북 지역 낮 최고기온이 13~17도 범위였습니다." } },
+  { k: "목", date: "10/29", today: true, b: "모카크림빵, 흰우유",
+    l: "잡곡밥, 조랭이미역국, 바싹불고기/파채, 무조림, 명엽채조림, 포기김치",
+    d: "흰밥, 부대찌개, 계란후라이, 청양멸치볶음, 상추양파무침, 포기김치",
+    dnote: "수업이 있는 학생은 18시까지 이용할 수 있습니다.",
+    w: { icon: "cloud", t: "2 / 13", cond: "흐림", sub: "아침 7시 3.2℃",
+      facts: [["최저","2℃"],["최고","13℃"],["습도","82%"],["바람","1.2~1.8 m/s"]],
+      note: "일교차가 11도입니다. 오후부터 저녁 사이 빗방울이 떨어질 수 있고, 늦은 밤부터 경북 중·북부 내륙에 비가 예보됐습니다.", alert: false } },
+  { k: "금", date: "10/30", b: "컵밥, 음료",
+    l: "콩나물밥/양념장, 바지락고추장찌개, 팽이버섯짬뽕조림, 도시락김, 포기김치, 음료",
+    d: "쌀밥, 계란탕, 오징어당면볶음, 강된장, 양배추찜/간장, 포기김치",
+    dnote: "금요일 저녁은 수업 연장 운영 안내가 없습니다.",
+    w: { icon: "rain", t: "8 / 20", cond: "구름 많고 한때 비", sub: "오전 강수확률 60% · 오후 20%",
+      facts: [["최저","8℃"],["최고","20℃"],["새벽 강수","약 4mm"],["바람","최대 4.4 m/s"]],
+      note: "새벽에 비가 내리고 오전에도 비 가능성이 있어 우산을 챙기는 편이 좋습니다. 낮에는 20도까지 올라 따뜻합니다.", alert: true } }
+];
+var ICONS = {
+  cloud: '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 46h28a10 10 0 0 0 1.5-19.9A15 15 0 0 0 18.6 24 11 11 0 0 0 18 46z"/></svg>',
+  rain: '<svg class="rainy" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 40h28a10 10 0 0 0 1.5-19.9A15 15 0 0 0 18.6 18 11 11 0 0 0 18 40z"/><path d="M24 48l-3 8M34 48l-3 8M44 48l-3 8"/></svg>'
+};
+function esc(s) { return String(s).replace(/[&<>]/g, function (c) { return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c]; }); }
+function items(s) { return s.split(",").map(function (x) { return "<li>" + esc(x.trim()) + "</li>"; }).join(""); }
+
+var tabs = document.getElementById("tabs");
+DAYS.forEach(function (d, i) {
+  var b = document.createElement("button");
+  b.className = "tab"; b.type = "button"; b.id = "tab-" + i;
+  b.setAttribute("role", "tab");
+  var tm = d.w.t ? d.w.t.split(" / ")[1] + "℃" : "–";
+  b.innerHTML = '<span class="now">' + (d.today ? "오늘" : "&nbsp;") + '</span><span class="d">' + d.k + '</span><span class="dt">' + d.date + '</span><span class="tm">' + tm + '</span>';
+  b.addEventListener("click", function () { show(i); });
+  tabs.appendChild(b);
+});
+
+function show(i) {
+  var d = DAYS[i], w = d.w;
+  DAYS.forEach(function (_, j) { document.getElementById("tab-" + j).setAttribute("aria-selected", j === i ? "true" : "false"); });
+  var wx = document.getElementById("weather");
+  if (w.none) {
+    wx.innerHTML = '<p class="w-empty">' + esc(w.note) + '</p>';
+  } else {
+    wx.innerHTML =
+      '<div class="w-main">' + ICONS[w.icon] +
+      '<div><div class="w-temp">' + esc(w.t.replace(" / ", " / ")) + '<span style="font-size:18px">℃</span></div>' +
+      '<div class="w-cond">' + esc(w.cond) + '</div><div class="w-sub">' + esc(w.sub) + '</div></div></div>' +
+      '<ul class="w-facts">' + w.facts.map(function (f) { return '<li>' + esc(f[0]) + ' <b>' + esc(f[1]) + '</b></li>'; }).join("") + '</ul>' +
+      '<p class="w-note' + (w.alert ? " alert" : "") + '">' + esc(w.note) + '</p>';
+  }
+  function meal(name, key, note) {
+    return '<article class="meal"><div class="meal-head"><h2>' + name + '</h2><span>' + TIMES[key] + '</span></div><ul>' + items(d[key]) + '</ul>' + (note ? '<p class="meal-note">' + esc(note) + '</p>' : '') + '</article>';
+  }
+  var dn = (i <= 3) ? "수업이 있는 학생은 18시까지 이용할 수 있습니다." : "";
+  document.getElementById("meals").innerHTML = meal("아침", "b") + meal("점심", "l") + meal("저녁", "d", dn);
+}
+show(3);
+</script>
+
+</body></html>
